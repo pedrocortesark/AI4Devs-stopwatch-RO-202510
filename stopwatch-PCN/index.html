@@ -1,277 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Online Stopwatch – Landing</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Online Stopwatch – Landing</title>
 
-<!-- Inline CSS (no external .css) -->
-<style>
-  :root{
-    --blue:#0a4fa1;        /* header bar */
-    --panel:#e9eefc;       /* pale-blue display background */
-    --panel-border:#4b4f59;
-    --green:#22e000;       /* action buttons */
-    --green-text:#0c0c0c;
-    --red:#ff1e1e;         /* clear buttons / warning */
-    --btn-radius:20px;
-    --panel-radius:28px;
-    --gap:24px;
-  }
+    <!-- Inline CSS (no external .css) -->
+    <style>
+        :root {
+            --blue: #0a4fa1;
+            /* header bar */
+            --panel: #e9eefc;
+            /* pale-blue display background */
+            --panel-border: #4b4f59;
+            --green: #22e000;
+            /* action buttons */
+            --green-text: #0c0c0c;
+            --red: #ff1e1e;
+            /* clear buttons / warning */
+            --btn-radius: 20px;
+            --panel-radius: 28px;
+            --gap: 24px;
+        }
 
-  *{ box-sizing:border-box; }
-  html,body{ height:100%; margin:0; font-family: Arial, Helvetica, sans-serif; background:#fff; }
-  body{ display:flex; flex-direction:column; }
+        * {
+            box-sizing: border-box;
+        }
 
-  /* Top bar like the reference */
-  .brandbar{
-    background:var(--blue);
-    color:#fff;
-    text-align:center;
-    font-weight:700;
-    letter-spacing:2px;
-    padding:10px 0;
-    font-size:28px;
-  }
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #fff;
+            color: #000;
+        }
 
-  /* Viewport + horizontal carousel */
-  .viewport{
-    position:relative;
-    overflow:hidden;
-    flex:1;
-  }
-  .carousel{
-    display:flex;
-    height:100%;
-    will-change: transform;
-    transition: transform 420ms ease;
-  }
-  .panel{
-    flex:0 0 100%;          /* each slide exactly viewport width */
-    width:100%;
-    padding:18px 18px 22px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:flex-start;
-    gap:var(--gap);
-  }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
 
-  /* Display box (rounded) with ms in the corner */
-  .time-wrap{
-    width:100%;
-    max-width:920px;
-    background:var(--panel);
-    border:6px solid var(--panel-border);
-    border-radius:var(--panel-radius);
-    padding:18px 28px;
-    position:relative;
-  }
-  .time{
-    width:100%;
-    text-align:center;
-    font-weight:900;
-    font-size: clamp(72px, 11vw, 180px);
-    line-height:1;
-    letter-spacing:2px;
-  }
-  .ms{
-    position:absolute;
-    right:28px;
-    bottom:10px;
-    font-size: clamp(18px, 3.2vw, 42px);
-    font-weight:800;
-  }
+        /* Top bar like the reference */
+        .brandbar {
+            background: var(--blue);
+            color: #fff;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 10px 0;
+            font-size: 28px;
+        }
 
-  /* Blink when finished (countdown) */
-  @keyframes blink-finish {
-    0%,49% { background:var(--panel); }
-    50%,100% { background:#f07a7a; }
-  }
-  .blink{ animation: blink-finish 800ms step-end infinite; }
+        /* Viewport + horizontal carousel */
+        .viewport {
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+        }
 
-  /* Buttons */
-  .row{ display:flex; gap:var(--gap); flex-wrap:wrap; justify-content:center; }
-  .btn{
-    min-width:180px;
-    padding:18px 28px;
-    border:none;
-    border-radius:var(--btn-radius);
-    font-size: clamp(20px, 2.5vw, 40px);
-    cursor:pointer;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
-  }
-  .btn-green{ background:var(--green); color:var(--green-text); }
-  .btn-red{ background:var(--red); color:black; }
-  .btn-gray{ background:linear-gradient(#d8d8d8,#bcbcbc); color:#111; }
+        .carousel {
+            display: flex;
+            height: 100%;
+            will-change: transform;
+            transition: transform 420ms ease;
+        }
 
-  .wide-controls .btn{ min-width:280px; }
+        .panel {
+            flex: 0 0 100%;
+            /* each slide exactly viewport width */
+            width: 100%;
+            padding: 18px 18px 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: var(--gap);
+        }
 
-  /* Landing split like the reference main.png */
-  .landing-split{
-    width:100%;
-    max-width:920px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    border-radius:var(--panel-radius);
-    overflow:hidden;
-    border:6px solid var(--panel-border);
-  }
-  .tile{
-    background:#ffffff;
-    padding:28px 14px 40px;
-    text-align:center;
-    min-height:340px;
-    position:relative;
-  }
-  .tile + .tile{
-    background:#eff8f0;
-    border-left:6px solid #e5e5e5;
-  }
-  .tile h2{
-    margin:0 0 8px;
-    font-size: clamp(28px, 4vw, 56px);
-    font-weight:700;
-  }
-  .arrow{
-    width:min(40vw, 220px);
-    height:auto;
-    filter: drop-shadow(0 3px 0 rgba(0,0,0,.25));
-  }
-  .tile .btn{
-    position:absolute;
-    left:50%;
-    bottom:16px;
-    transform:translateX(-50%);
-    min-width:220px;
-  }
+        /* Display box (rounded) with ms in the corner */
+        .time-wrap {
+            width: 100%;
+            max-width: 920px;
+            background: var(--panel);
+            border: 6px solid var(--panel-border);
+            border-radius: var(--panel-radius);
+            padding: 18px 28px;
+            position: relative;
+        }
 
-  /* Keypad (like the reference grid) */
-  .keypad{
-    display:grid;
-    grid-template-columns: repeat(5, minmax(90px, 1fr));
-    gap:18px;
-    width:100%;
-    max-width:920px;
-  }
-  .key{
-    background:var(--green);
-    color:#000;
-    border-radius:var(--btn-radius);
-    padding:22px 0;
-    text-align:center;
-    font-size: clamp(24px, 3vw, 44px);
-    font-weight:800;
-    cursor:pointer;
-    user-select:none;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
-  }
-  .key.action-set{ grid-column: span 2; }
-  .key.action-clear{ grid-column: span 2; background:linear-gradient(#e6e6e6,#c9c9c9); }
+        .time {
+            width: 100%;
+            text-align: center;
+            font-weight: 900;
+            font-size: clamp(72px, 11vw, 180px);
+            line-height: 1;
+            letter-spacing: 2px;
+            color: #000;
+            /* explicit to avoid theme conflicts */
+        }
 
-  .backbar{
-    width:100%;
-    background:var(--blue);
-    color:#fff;
-    padding:10px 14px;
-    font-size:28px;
-  }
-  .back-link{
-    display:inline-flex; align-items:center; gap:10px;
-    color:#b6ff00; text-decoration:none; font-weight:700;
-  }
-  .back-link::before{ content:"\25C0"; font-size:24px; } /* ◀ */
+        .ms {
+            position: absolute;
+            right: 28px;
+            bottom: 10px;
+            font-size: clamp(18px, 3.2vw, 42px);
+            font-weight: 800;
+            color: #000;
+            /* explicit to avoid theme conflicts */
+        }
 
-  /* Low-height screens */
-  @media (max-height:560px){
-    :root{ --gap:16px; }
-    .btn{ padding:14px 20px; }
-    .tile{ min-height:260px; }
-  }
-</style>
+        /* Blink when finished (countdown) */
+        @keyframes blink-finish {
+
+            0%,
+            49% {
+                background: var(--panel);
+            }
+
+            50%,
+            100% {
+                background: #f07a7a;
+            }
+        }
+
+        .blink {
+            animation: blink-finish 800ms step-end infinite;
+        }
+
+        /* Buttons */
+        .row {
+            display: flex;
+            gap: var(--gap);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            min-width: 180px;
+            padding: 18px 28px;
+            border: none;
+            border-radius: var(--btn-radius);
+            font-size: clamp(20px, 2.5vw, 40px);
+            cursor: pointer;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-green {
+            background: var(--green);
+            color: var(--green-text);
+        }
+
+        .btn-red {
+            background: var(--red);
+            color: black;
+        }
+
+        .btn-gray {
+            background: linear-gradient(#d8d8d8, #bcbcbc);
+            color: #111;
+        }
+
+        .wide-controls .btn {
+            min-width: 280px;
+        }
+
+        /* Landing split like the reference main.png */
+        .landing-split {
+            width: 100%;
+            max-width: 920px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-radius: var(--panel-radius);
+            overflow: hidden;
+            border: 6px solid var(--panel-border);
+        }
+
+        .tile {
+            background: #ffffff;
+            padding: 28px 14px 40px;
+            text-align: center;
+            min-height: 340px;
+            position: relative;
+
+            /* make tile clickable & accessible */
+            cursor: pointer;
+            outline: none;
+        }
+
+        .tile:focus-visible {
+            box-shadow: inset 0 0 0 6px #7cc1ff;
+        }
+
+        .tile+.tile {
+            background: #eff8f0;
+            border-left: 6px solid #e5e5e5;
+        }
+
+        .tile h2 {
+            margin: 0 0 8px;
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 700;
+            color: #000;
+        }
+
+        .arrow {
+            width: min(40vw, 220px);
+            height: auto;
+            filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .25));
+        }
+
+        .backbar {
+            width: 100%;
+            background: var(--blue);
+            color: #fff;
+            padding: 10px 14px;
+            font-size: 28px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #b6ff00;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .back-link::before {
+            content: "\25C0";
+            font-size: 24px;
+        }
+
+        /* ◀ */
+
+        /* Low-height screens */
+        @media (max-height:560px) {
+            :root {
+                --gap: 16px;
+            }
+
+            .btn {
+                padding: 14px 20px;
+            }
+
+            .tile {
+                min-height: 260px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <div class="brandbar">www.online-stopwatch.com</div>
+    <div class="brandbar">www.online-stopwatch.com</div>
 
-  <div class="viewport">
-    <div id="carousel" class="carousel" aria-live="polite">
-      <!-- ORDER MATTERS: [Stopwatch | Landing | Countdown] -->
-      <!-- LEFT: Stopwatch -->
-      <section class="panel" id="stopwatchPanel" aria-label="Stopwatch view">
-        <div class="time-wrap" id="swDisplayWrap">
-          <div id="swTime" class="time">00:00:00</div>
-          <div id="swMs" class="ms">000</div>
-        </div>
-        <div class="row wide-controls">
-          <button id="swStartStop" class="btn btn-green">Start</button>
-          <button id="swClear" class="btn btn-red">Clear</button>
-        </div>
-        <div class="backbar">
-          <a href="#" id="backFromStopwatch" class="back-link">Back</a>
-        </div>
-      </section>
+    <div class="viewport">
+        <div id="carousel" class="carousel" aria-live="polite">
+            <!-- ORDER: [Stopwatch | Landing | Countdown] -->
 
-      <!-- CENTER: Landing -->
-      <section class="panel" id="landing">
-        <div class="landing-split" aria-label="Choose stopwatch or countdown">
-          <div class="tile">
-            <h2>Stopwatch</h2>
-            <svg class="arrow" viewBox="0 0 128 128" aria-hidden="true">
-              <path d="M64 8 L112 80 H80 V120 H48 V80 H16 Z"
-                    fill="#3cf14f" stroke="#2e353c" stroke-width="4" />
-              <path d="M64 8 L112 80 H80 V120 H64 Z"
-                    fill="#6bf579" opacity=".6"/>
-            </svg>
-            <button id="goStopwatch" class="btn btn-green">Start</button>
-          </div>
-          <div class="tile">
-            <h2>Countdown</h2>
-            <svg class="arrow" viewBox="0 0 128 128" aria-hidden="true">
-              <path d="M64 120 L16 48 H48 V8 H80 V48 H112 Z"
-                    fill="#ff4848" stroke="#2e353c" stroke-width="4" />
-              <path d="M64 120 L16 48 H48 V8 H64 Z"
-                    fill="#ff6d6d" opacity=".6"/>
-            </svg>
-            <button id="goCountdown" class="btn btn-green">Start</button>
-          </div>
-        </div>
-      </section>
+            <!-- LEFT: Stopwatch -->
+            <section class="panel" id="stopwatchPanel" aria-label="Stopwatch view">
+                <div class="time-wrap" id="swDisplayWrap">
+                    <div id="swTime" class="time">00:00:00</div>
+                    <div id="swMs" class="ms">000</div>
+                </div>
+                <div class="row wide-controls">
+                    <button id="swStartStop" class="btn btn-green">Start</button>
+                    <button id="swClear" class="btn btn-red">Clear</button>
+                </div>
+                <div class="backbar">
+                    <a href="#" id="backFromStopwatch" class="back-link">Back</a>
+                </div>
+            </section>
 
-      <!-- RIGHT: Countdown -->
-      <section class="panel" id="countdownPanel" aria-label="Countdown view">
-        <!-- keypad stage -->
-        <div id="cdKeypadStage" class="time-wrap">
-          <div class="time" id="cdKeypadScreen">00:00</div>
-          <div class="ms">000</div>
-        </div>
-        <div id="keypad" class="keypad" aria-label="Numeric keypad (minutes)">
-          <!-- Top row 5..9 -->
-          <div class="key">5</div><div class="key">6</div><div class="key">7</div><div class="key">8</div><div class="key">9</div>
-          <!-- Second row 0..4 -->
-          <div class="key">0</div><div class="key">1</div><div class="key">2</div><div class="key">3</div><div class="key">4</div>
-          <!-- Actions -->
-          <div class="key action-set" data-action="set">Set</div>
-          <div class="key action-clear" data-action="clear">Clear</div>
-        </div>
+            <!-- CENTER: Landing (TILES ARE CLICKABLE; NO BUTTONS) -->
+            <section class="panel" id="landing">
+                <div class="landing-split" aria-label="Choose stopwatch or countdown">
+                    <div class="tile" id="tileStopwatch" role="button" tabindex="0" aria-label="Open Stopwatch">
+                        <h2>Stopwatch</h2>
+                        <svg class="arrow" viewBox="0 0 128 128" aria-hidden="true">
+                            <path d="M64 8 L112 80 H80 V120 H48 V80 H16 Z" fill="#3cf14f" stroke="#2e353c"
+                                stroke-width="4" />
+                            <path d="M64 8 L112 80 H80 V120 H64 Z" fill="#6bf579" opacity=".6" />
+                        </svg>
+                    </div>
+                    <div class="tile" id="tileCountdown" role="button" tabindex="0" aria-label="Open Countdown">
+                        <h2>Countdown</h2>
+                        <svg class="arrow" viewBox="0 0 128 128" aria-hidden="true">
+                            <path d="M64 120 L16 48 H48 V8 H80 V48 H112 Z" fill="#ff4848" stroke="#2e353c"
+                                stroke-width="4" />
+                            <path d="M64 120 L16 48 H48 V8 H64 Z" fill="#ff6d6d" opacity=".6" />
+                        </svg>
+                    </div>
+                </div>
+            </section>
 
-        <!-- run stage -->
-        <div id="cdRunStage" class="time-wrap" style="display:none;">
-          <div id="cdTime" class="time">00:00:00</div>
-          <div id="cdMs" class="ms">000</div>
-        </div>
-        <div id="cdRunControls" class="row wide-controls" style="display:none;">
-          <button id="cdStart" class="btn btn-green">Start</button>
-          <button id="cdReset" class="btn btn-red">Clear</button>
-        </div>
+            <!-- RIGHT: Countdown -->
+            <section class="panel" id="countdownPanel" aria-label="Countdown view">
+                <!-- keypad stage -->
+                <div id="cdKeypadStage" class="time-wrap">
+                    <div class="time" id="cdKeypadScreen">00:00</div>
+                    <div class="ms">000</div>
+                </div>
+                <div id="keypad" class="keypad" aria-label="Numeric keypad (minutes)">
+                    <!-- Top row 5..9 -->
+                    <div class="key">5</div>
+                    <div class="key">6</div>
+                    <div class="key">7</div>
+                    <div class="key">8</div>
+                    <div class="key">9</div>
+                    <!-- Second row 0..4 -->
+                    <div class="key">0</div>
+                    <div class="key">1</div>
+                    <div class="key">2</div>
+                    <div class="key">3</div>
+                    <div class="key">4</div>
+                    <!-- Actions -->
+                    <div class="key action-set" data-action="set">Set</div>
+                    <div class="key action-clear" data-action="clear">Clear</div>
+                </div>
 
-        <div class="backbar">
-          <a href="#" id="backFromCountdown" class="back-link">Back</a>
+                <!-- run stage -->
+                <div id="cdRunStage" class="time-wrap" style="display:none;">
+                    <div id="cdTime" class="time">00:00:00</div>
+                    <div id="cdMs" class="ms">000</div>
+                </div>
+                <div id="cdRunControls" class="row wide-controls" style="display:none;">
+                    <button id="cdStart" class="btn btn-green">Start</button>
+                    <button id="cdReset" class="btn btn-red">Clear</button>
+                </div>
+
+                <div class="backbar">
+                    <a href="#" id="backFromCountdown" class="back-link">Back</a>
+                </div>
+            </section>
         </div>
-      </section>
     </div>
-  </div>
 
-  <!-- Defer to ensure DOM is ready -->
-  <script src="script.js" defer></script>
+    <!-- Defer to ensure DOM is ready -->
+    <script src="script.js" defer></script>
 </body>
+
 </html>

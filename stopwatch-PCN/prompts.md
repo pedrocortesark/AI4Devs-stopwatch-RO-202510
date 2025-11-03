@@ -87,3 +87,14 @@ Once you confirm these five points, I’ll produce the three requested files in 
 3. Like the stopwatch, this element should be exactly the same as well. The milliseconds are just under the main element; check the reference images. There are three digits for the milliseconds.
 4. I prefer a concise format. 
 5. When it reaches zero, I want a small sound, yes. And for the visual reference, a blinking change between the current background and the red one provided in the reference (stopwatch-stop.png) will work
+
+
+# STEP 2.2 - Tweaks
+
+With any iteration, I want you to give me the whole html and js files. Also, take into account we need the carousel left for stopwatch and the right for the countdown. Improve the carousel as it's not working properly.
+
+In the main view I can see the two start buttons to choose between stopwatch and countdow, but I want to click on the two images that you already have. I don't want to see the button elements.
+
+# STEP 2.3 - Tweaks
+
+Something has been broken in the countdown now. I cannot see the numbers. also when I click on back to return to the main view, the countdown should reset

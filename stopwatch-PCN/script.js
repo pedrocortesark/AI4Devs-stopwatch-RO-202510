@@ -1,8 +1,8 @@
-/* Stopwatch + Countdown with center landing
+/* Stopwatch + Countdown with center landing (tiles clickable)
    Panels order: [Stopwatch | Landing | Countdown]
-   - Clicking Stopwatch slides LEFT (to index 0)
-   - Clicking Countdown slides RIGHT (to index 2)
-   - Back returns to center (index 1)
+   Fixes:
+   - Explicit colors + stage visibility so countdown digits always show.
+   - Back from Countdown resets to keypad stage and clears input.
 */
 
 document.addEventListener('DOMContentLoaded', () =>
@@ -109,11 +109,32 @@ document.addEventListener('DOMContentLoaded', () =>
     }
     window.addEventListener('resize', () => setTransform(current, false));
 
-    // Navigation wiring
-    document.getElementById('goStopwatch').addEventListener('click', () => go(0)); // left
-    document.getElementById('goCountdown').addEventListener('click', () => go(2)); // right
+    // Landing TILES (images) are the click targets
+    const tileStopwatch = document.getElementById('tileStopwatch');
+    const tileCountdown = document.getElementById('tileCountdown');
+
+    function activateTile(el, action)
+    {
+        el.addEventListener('click', action);
+        el.addEventListener('keydown', (e) =>
+        {
+            if (e.key === 'Enter' || e.key === ' ')
+            {
+                e.preventDefault(); action();
+            }
+        });
+    }
+    activateTile(tileStopwatch, () => go(0)); // left
+    activateTile(tileCountdown, () => go(2)); // right
+
+    // Back links (including reset logic for countdown)
     document.getElementById('backFromStopwatch').addEventListener('click', (e) => { e.preventDefault(); go(1); });
-    document.getElementById('backFromCountdown').addEventListener('click', (e) => { e.preventDefault(); go(1); });
+    document.getElementById('backFromCountdown').addEventListener('click', (e) =>
+    {
+        e.preventDefault();
+        resetCountdownToLanding(); // full reset before sliding back
+        go(1);
+    });
 
     /* ================= Stopwatch UI ================= */
     const sw = {
@@ -182,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () =>
             const minutes = parseInt(keypadDigits || '0', 10);
             const ms = Math.max(0, minutes) * 60000;
             countdown.set(ms);
+            // show run stage
             cd.keypadStage.style.display = 'none';
             cd.keypad.style.display = 'none';
             cd.runStage.style.display = '';
@@ -234,6 +256,26 @@ document.addEventListener('DOMContentLoaded', () =>
         countdown.resetToPreset();
         document.title = `${cd.timeMain.textContent}.${cd.timeMs.textContent} – Countdown`;
     });
+
+    // Helper: full reset of countdown when leaving to landing
+    function resetCountdownToLanding()
+    {
+        // stop + remove blinking
+        cdWrap.classList.remove('blink');
+        countdown.stop();
+
+        // restore keypad stage
+        keypadDigits = '';
+        renderKeypad();
+        cd.keypadStage.style.display = '';
+        cd.keypad.style.display = '';
+        cd.runStage.style.display = 'none';
+        cd.runControls.style.display = 'none';
+
+        // reset preset to zero
+        countdown.set(0);
+        document.title = 'Online Stopwatch – Landing';
+    }
 
     // Initialize position to center (Landing)
     setTransform(current, false);
