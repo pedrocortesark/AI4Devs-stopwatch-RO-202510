@@ -1,8 +1,9 @@
 /* Stopwatch + Countdown with center landing (tiles clickable)
    Panels order: [Stopwatch | Landing | Countdown]
    Fixes:
-   - Explicit colors + stage visibility so countdown digits always show.
-   - Back from Countdown resets to keypad stage and clears input.
+   - Keypad uses real <button> elements (robust clicks/taps/keyboard).
+   - Countdown always enters with a fresh, visible keypad.
+   - Back from Countdown fully resets to keypad and clears digits.
 */
 
 document.addEventListener('DOMContentLoaded', () =>
@@ -109,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () =>
     }
     window.addEventListener('resize', () => setTransform(current, false));
 
-    // Landing TILES (images) are the click targets
+    // Landing tiles
     const tileStopwatch = document.getElementById('tileStopwatch');
     const tileCountdown = document.getElementById('tileCountdown');
 
@@ -124,15 +125,25 @@ document.addEventListener('DOMContentLoaded', () =>
             }
         });
     }
-    activateTile(tileStopwatch, () => go(0)); // left
-    activateTile(tileCountdown, () => go(2)); // right
+    activateTile(tileStopwatch, () =>
+    {
+        // Optional: stop countdown if it was running and user goes to stopwatch
+        hardResetCountdown(); // keep app tidy
+        go(0); // left
+    });
+    activateTile(tileCountdown, () =>
+    {
+        // Ensure keypad is fresh every time we enter countdown
+        hardResetCountdown();
+        go(2); // right
+    });
 
-    // Back links (including reset logic for countdown)
+    // Back links
     document.getElementById('backFromStopwatch').addEventListener('click', (e) => { e.preventDefault(); go(1); });
     document.getElementById('backFromCountdown').addEventListener('click', (e) =>
     {
         e.preventDefault();
-        resetCountdownToLanding(); // full reset before sliding back
+        hardResetCountdown();
         go(1);
     });
 
@@ -187,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () =>
     };
 
     let keypadDigits = '';
+
     function renderKeypad()
     {
         const minutes = parseInt(keypadDigits || '0', 10);
@@ -195,10 +207,27 @@ document.addEventListener('DOMContentLoaded', () =>
     }
     renderKeypad();
 
+    // Clicks for keypad buttons
     cd.keypad.addEventListener('click', (e) =>
     {
         const el = e.target.closest('.key'); if (!el) return;
-        if (el.dataset.action === 'set')
+        handleKeypadAction(el);
+    });
+
+    // Keyboard accessibility for keypad (Enter/Space triggers focused key)
+    cd.keypad.addEventListener('keydown', (e) =>
+    {
+        if (e.key === 'Enter' || e.key === ' ')
+        {
+            const el = document.activeElement?.classList?.contains('key') ? document.activeElement : null;
+            if (el) { e.preventDefault(); handleKeypadAction(el); }
+        }
+    });
+
+    function handleKeypadAction(el)
+    {
+        const action = el.dataset.action;
+        if (action === 'set')
         {
             const minutes = parseInt(keypadDigits || '0', 10);
             const ms = Math.max(0, minutes) * 60000;
@@ -209,14 +238,22 @@ document.addEventListener('DOMContentLoaded', () =>
             cd.runStage.style.display = '';
             cd.runControls.style.display = '';
             document.title = `${cd.timeMain.textContent}.${cd.timeMs.textContent} – Countdown`;
-        } else if (el.dataset.action === 'clear')
-        {
-            keypadDigits = ''; renderKeypad();
-        } else
-        {
-            if (keypadDigits.length < 4) { keypadDigits += el.textContent.trim(); renderKeypad(); }
+            return;
         }
-    });
+        if (action === 'clear')
+        {
+            keypadDigits = '';
+            renderKeypad();
+            return;
+        }
+        // numeric
+        const d = el.textContent.trim();
+        if (/^\d$/.test(d) && keypadDigits.length < 4)
+        {
+            keypadDigits += d;
+            renderKeypad();
+        }
+    }
 
     // Small beep when finished
     const beep = () =>
@@ -240,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () =>
     }, () =>
     {
         document.title = `00:00:00 – Time’s up`;
-        cdWrap.classList.add('blink'); // background toggles via CSS
+        cdWrap.classList.add('blink');
         beep();
     });
 
@@ -257,24 +294,18 @@ document.addEventListener('DOMContentLoaded', () =>
         document.title = `${cd.timeMain.textContent}.${cd.timeMs.textContent} – Countdown`;
     });
 
-    // Helper: full reset of countdown when leaving to landing
-    function resetCountdownToLanding()
+    // Full reset of countdown (used on Back and on entering countdown)
+    function hardResetCountdown()
     {
-        // stop + remove blinking
         cdWrap.classList.remove('blink');
         countdown.stop();
-
-        // restore keypad stage
         keypadDigits = '';
         renderKeypad();
         cd.keypadStage.style.display = '';
         cd.keypad.style.display = '';
         cd.runStage.style.display = 'none';
         cd.runControls.style.display = 'none';
-
-        // reset preset to zero
         countdown.set(0);
-        document.title = 'Online Stopwatch – Landing';
     }
 
     // Initialize position to center (Landing)
